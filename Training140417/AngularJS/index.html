@@ -1,0 +1,116 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+	<meta charset="utf-8" />
+    <script src="angular.min.js"></script>
+    <script src="angular-resource.js"></script>
+</head>
+<body>
+    <form ng-app="app" ng-controller="uploadController">
+        <input id="selectfile" type="file" name="file" onchange="angular.element(this).scope().SelectFiles(this.files);" />
+        <button ng-click="UploadFile()">upload</button>
+    </form>
+    <script>
+        var app = angular.module('app', ["ngResource"]);
+
+        app.factory("uploadresource",["$resource", Resource]);
+
+        function Resource($resource) {
+            function formDataObject(data) {
+                console.log(data);
+                var fd = new FormData();
+                fd.append("file", data.File);
+                return fd;
+            }
+            return $resource("/api/upload/:action/123", {},
+                   {        	
+                       add: {
+                           params: { action: 'DataUpload' },
+                           method: 'POST',
+                           transformRequest: formDataObject,
+                           headers: { 'Content-Type': undefined }
+                       }
+                   })
+        }
+
+        app.controller('uploadController', function ($scope, $rootScope, uploadresource) {
+            // Initialize variable
+
+            $scope.files = null;
+
+            var uploadResource = new uploadresource();
+
+            // Function section
+
+            $scope.SelectFiles = function (files) {
+                console.log(files);
+
+                //var fileType = files[0].type;
+                //var fileName = files[0].name;
+                //var fileExtension = fileName.substring(fileName.lastIndexOf('.'));
+
+                //if ((fileExtension == ".csv")) {
+
+                    $scope.files = files;
+                    //$("#selectfile").val($("#my-file-selector").val());
+
+                //} else {
+
+                    //$scope.files = null;
+                    //$("#upload-file-info").val("");
+
+                //}
+
+            }
+
+            $scope.UploadFile = function () {
+
+
+                    try {
+
+                        if ($scope.files != null) {
+
+                            uploadResource.File = $scope.files[0];
+
+                            uploadResource.$add().then(function (data) {
+
+                                console.log("response",data);
+                                if (data[0] == "1") {
+
+                                    console.log("Success");
+
+                                } else {
+                                    // assign the error  messgae
+                                    console.log("Error");
+                                }
+
+                            }, function errorCallback(response) {
+                               
+                                console.log(response);
+                            });
+
+
+
+                        }
+                        else {
+                            console.log("Error");
+                        }
+
+                    } catch (ex) {
+                        console.log(ex);
+                    }
+
+
+
+                    // end upload function
+
+                
+
+            }
+
+        });
+    </script>
+    
+</body>
+</html>
